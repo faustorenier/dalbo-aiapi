@@ -1,0 +1,5 @@
+google-generativeai>=0.3.0
+python-dotenv>=1.0.0
+pdfminer.six>=20221105
+fastapi>=0.115.12
+uvicorn>=0.34.2 
