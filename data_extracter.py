@@ -1,6 +1,7 @@
 import os
 import json
 import google.generativeai as genai
+import httpx
 from fastapi import FastAPI, UploadFile, HTTPException
 from dotenv import load_dotenv
 
@@ -78,6 +79,31 @@ async def get_pdf_text(file: UploadFile) -> list[str]:
         )
 
 
+async def fetch_clients_from_crm() -> list:
+    """
+    Recupera la lista dei clienti dal CRM.
+    
+    Returns:
+        list: Lista dei clienti dal CRM
+        
+    Raises:
+        HTTPException: Se il recupero dei dati fallisce
+    """
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{os.getenv('CRM_BASE_API')}/clients",
+            headers={
+                "x-crm-secret-key": os.getenv("CRM_SECRET_KEY"),
+                "origin": os.getenv("CRM_ALLOWED_ORIGIN")
+            }
+        )
+        if response.status_code == 200:
+            clients_data = response.json()
+            return clients_data["data"]
+        else:
+            raise HTTPException(status_code=response.status_code, detail="Error: Failed to fetch clients data")
+
+
 async def extract_invoice_data(file: UploadFile, companyId: str) -> dict:
     """
     Process a PDF invoice and extract relevant information using Gemini AI.
@@ -107,8 +133,10 @@ async def extract_invoice_data(file: UploadFile, companyId: str) -> dict:
     main_prompt = company_config["MAIN_PROMPT"]
     products_list = company_config["PRODUCTS_LIST"]
     coverings_list = company_config["COVERINGS_LIST"]
-    clients_list = company_config["CLIENTS_LIST"]
     
+    # fetch clients data from CRM
+    clients_list = await fetch_clients_from_crm()
+
     # Extract text from PDF
     pages_text = await get_pdf_text(file)
 

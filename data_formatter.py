@@ -170,15 +170,17 @@ def process_chunk_data(
     # Normalize client names for this chunk
     if processed_items:
         prompt = f"""
-        You are an assistant specialized in normalizing client names. Your task is to match and replace client names with their standardized versions from a reference list.
+        You are an assistant specialized in normalizing client names. Your task is to match client names with their standardized versions from a reference list and add their information in a new field.
 
         REFERENCE LIST:
         {json.dumps(clients_list, indent=2)}
 
         RULES:
         1. Match the input client name with the most similar name in the reference list
-        2. If a match is found, replace the name with the standardized version and include its ID
-        3. If no match is found, keep the original name
+        2. If a match is found, keep the original name and add a new field 'client_info' containing an object with:
+           - 'name': the standardized name from the reference list
+           - 'id': the corresponding ID from the reference list
+        3. If no match is found, keep the original name without adding any client_info
         4. Preserve all other fields in the input data
         5. Return the data in the same format as the input
 
