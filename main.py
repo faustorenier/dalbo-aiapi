@@ -10,7 +10,7 @@ except ImportError:
     from data_extracter import extract_invoice_data
 
 
-app = FastAPI()
+app = FastAPI(title="Invoice Extractor API", description="API for extracting invoice data from PDF files")
 
 
 # [
